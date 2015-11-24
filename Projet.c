@@ -18,19 +18,17 @@ int main(int argc, char *argv[])
     switch(affichageMenu())
     {
                      case 1:
-                          printf("Vous avez choisis le chiffrement AES!");
+                          printf("Vous avez choisis le chiffrement AES!\n\n");
                           break;
                      case 2:
-                          printf("Vous avez choisis le chiffrement El-Gamal!");
+                          printf("Vous avez choisis le chiffrement El-Gamal!\n\n");
                           break;
                      case 3:
-                          printf("Vous avez choisis la signature El-Gamal!");
+                          printf("Vous avez choisis la signature El-Gamal!\n\n");
                           break;    
                      default:
-                             printf("Choix non valide!");
-                             break;
+                          printf("Choix non valide!\n\n");
+                          break;
     }
-     
-  	system("PAUSE");  
   	return 0;
 }
