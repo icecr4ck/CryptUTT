@@ -7,8 +7,8 @@ int affichageMenu()
      printf("---Sélectionner votre fonction de chiffrement---\n");
      printf("1.Chiffrement AES\n");
      printf("2.Chiffrement El-Gamal\n");
-     printf("3.Signature El-Gamal\n\n\n");
-     printf("\nVotre choix?\n\n");
+     printf("3.Signature El-Gamal\n");
+     printf("\nVotre choix?\n");
      scanf("%d", &choixMenu);
      return choixMenu;
 }
