@@ -46,6 +46,5 @@ int main(int argc, char *argv[])
             printf("Choix non valide!\n\n");
             break;
     }
-    printf("test\n");
   	return 0;
 }
