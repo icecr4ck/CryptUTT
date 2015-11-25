@@ -29,7 +29,7 @@ void chiffrementAES()
     }
     if (choixMenu==1){
         printf("Veuillez précisez votre clé\n");
-        scanf("%d", ); //on recupere la clef
+        gmp_scanf(&clef) ;//on recupere la clef
         // Partie ou on demande le fichier à chiffrer.
 
     }
@@ -57,7 +57,7 @@ void chiffrementAES128(mpz_t *clef){
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
      }; 
      FILE* fichier = NULL;
-     unsigned char tableau [4][4], tabSboxed [4][4], tabKey[4][4];
+     unsigned char tableau [4][4], tabSboxed [4][4], tabKey[4][4], tabInterm[16];
      int i,j,intermediaire;
      fichier = fopen ("test.txt", "r");
      if (fichier == NULL){
@@ -91,9 +91,17 @@ void chiffrementAES128(mpz_t *clef){
         // On applique mixColumn
 
         //On applique AddRoundKey
+        //On transforme le gmp en tableau de char (ou string)
+        // char * mpz_get_str (char *str, int base, const mpz_t op)   https://gmplib.org/manual/Converting-Integers.html
+        mpz_get_str (tabInterm, 10, clef);
         for (i=0;i<4;i++){
             for (j=0;j<4,j++){
-                tableau[i][j]=tabSboxed[i][j]^tabKey[i][j]
+                tabKey[i][j]=tabInterm[i*4+j];
+            }
+        }
+        for (i=0;i<4;i++){
+            for (j=0;j<4,j++){
+                tableau[i][j]=tabSboxed[i][j]^tabKey[i][j];
             }
         }
         fclose (fichier);
