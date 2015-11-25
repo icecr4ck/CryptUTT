@@ -33,8 +33,6 @@ void chiffrementAES()
         // Partie ou on demande le fichier à chiffrer.
 
     }
-    printf("2.Chiffrement El-Gamal\n");
-    printf("3.Signature El-Gamal\n");
 
 }
 
