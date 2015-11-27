@@ -7,7 +7,7 @@
 int affichageMenu()
 { 
     int choixMenu = 0;
-    printf("---Sélectionner votre fonction de chiffrement---\n");
+    printf("--> Sélectionner votre fonction de chiffrement <--\n");
     printf("1.Chiffrement AES\n");
     printf("2.Chiffrement El-Gamal\n");
     printf("3.Signature El-Gamal\n");
@@ -16,29 +16,19 @@ int affichageMenu()
     return choixMenu;
 }
 
-void chiffrementAES()
+char ** addRoundKey(char **state, int *cle)
 {
-    int choixMenu;
-    mpz_t clef;
-    mpz_init(clef);
-    printf("Vous avez choisi le chiffrement AES!\n\n");
-    printf("Vous utilisez une clé de 1. 128 bits   2. 196 bits   3. 256 bits\n");
-    scanf("%d", &choixMenu);
-    while (choixMenu != 1 && choixMenu !=2 && choixMenu !=3) {
-        printf("Erreur, veuillez reprécisez la taille de clé. \n");
-        scanf("%d", &choixMenu);
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 4; j++){
+            state[i][j] = state[i][j] ^ cle[i*4+j];
+        }
     }
-    if (choixMenu==1){
-        printf("Veuillez précisez votre clé\n");
-        gmp_scanf("%s",&clef);//on recupere la clef
-        // Partie ou on demande le fichier à chiffrer.
-
-    }
-
+    return state;
 }
 
-void chiffrementAES128(mpz_t *clef){
-    unsigned char sbox[256] = 
+char ** subBytes(char **bloc)
+{
+    unsigned char sbytes[256] = 
     {
         0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
         0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -56,71 +46,138 @@ void chiffrementAES128(mpz_t *clef){
         0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-     }; 
+     };
+     for (int i = 0;i < 4; i++){
+        for (int j = 0; j < 4; j++){
+            bloc[i][j]=sbytes[bloc[i][j]];
+        }
+    }
+    return bloc;
+}
+
+char ** mixColumns(char **bloc)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        bloc[0][i] = (2*bloc[0][i]) ^ (3*bloc[1][i]) ^ bloc[2][i] ^ bloc[3][i]; 
+        bloc[1][i] = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i]; 
+        bloc[2][i] = bloc[0][i] ^ bloc[1][i] ^ (2*bloc[2][i]) ^ (3*bloc[3][i]); 
+        bloc[3][i] = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]); 
+    }
+    return bloc;
+    // A voir pour la multiplication
+}
+
+char ** shiftRows(char **state)
+{
+    for (int i = 0; i < 4; ++i) //Pour chaque ligne
+    {
+        for (int j = i; j > 0; j--){ //On effectue un nombre de décalage vers la droite du tableau correspondant à la ligne
+            temp=state[i][0];
+            state[i][0]=state[i][1];
+            state[i][1]=state[i][2];
+            state[i][2]=state[i][3];
+            state[i][3]=temp;
+        }
+    }
+    return state;
+}
+
+void keyExpansion()
+{
+
+}
+
+int * creationCle(int tailleCle)
+{
+    unsigned long mot_passe;
+    printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
+    scanf("%lu", &mot_passe);
+    srand(mot_passe);
+    int cle[tailleCle];
+    for (int i = 0; i < tailleCle ; i++ ) {
+        if (i % 8 == 7) {
+            cle[i] = (cle[i-7] + cle[i-6] + cle[i-5] + cle[i-4] + cle[i-3] + cle[i-2] + cle[i-1]) % 2;
+        }
+        else {
+            cle[i] = rand()%2;
+        }
+    } 
+    return cle;
+}
+
+void chiffrementAES128(int *cle)
+{
      FILE* fichier = NULL;
-     unsigned char tableau [4][4], tabSboxed [4][4], tabKey[4][4], tabInterm[16];
-     int i,j,intermediaire;
      fichier = fopen ("test.txt", "r");
+     char bloc[4][4];
      if (fichier == NULL){
-        printf ("Erreur dans l'ouverture du fichier \n");
+        printf ("Erreur dans l'ouverture du fichier !\n");
      }
      else{
         //On récupère le tableau qu'on va mettre dans la round
-        for (i=0;i<4;i++){
-            for (j=0;j<4;j++){
-                tableau[i][j]=fgetc(fichier);
+        for (int i = 0; i < 4; i++){
+            for (int j = 0; j < 4; j++){
+                bloc[i][j] = fgetc(fichier);
             }
         }
-        //On applique sbox au tableau
-        for (i=0;i<4;i++){
-            for (j=0;j<4;j++){
-                intermediaire=tableau[i][j];
-                tabSboxed[i][j]=sbox[intermediaire];
-            }
-        }
-        //On applique ShiftRows
-        for (i = 0; i < 4; ++i) //Pour chaque ligne
-        {
-            for (j=i;j>0;j--){ //On effectue un nombre de décalage vers la droite du tableau correspondant à la ligne
-                intermediaire=tabSboxed[i][0];
-                tabSboxed[i][0]=tabSboxed[i][1];
-                tabSboxed[i][1]=tabSboxed[i][2];
-                tabSboxed[i][2]=tabSboxed[i][3];
-                tabSboxed[i][3]=intermediaire;
-            }
-        }
-        // On applique mixColumn
-
-        //On applique AddRoundKey
-        //On transforme le gmp en tableau de char (ou string)
-        // char * mpz_get_str (char *str, int base, const mpz_t op)   https://gmplib.org/manual/Converting-Integers.html
-        mpz_get_str (tabInterm, 10, clef);
-        for (i=0;i<4;i++){
-            for (j=0;j<4;j++){
-                tabKey[i][j]=tabInterm[i*4+j];
-            }
-        }
-        for (i=0;i<4;i++){
-            for (j=0;j<4;j++){
-                tableau[i][j]=tabSboxed[i][j]^tabKey[i][j];
-            }
-        }
+        // Mettre toutes les fonctions ici
         fclose (fichier);
      }
 }
 
-void subBytes (){
+void chiffrementAES196(int *cle)
+{
 
+}
+
+void chiffrementAES256(int *cle)
+{
+
+}
+
+void chiffrementAES()
+{
+    int choixMenu;
+    printf("Vous avez choisi le chiffrement AES !\n\n");
+    printf("--> Sélectionner la taille de clé <--\n");
+    printf("1.128 bits\n");
+    printf("2.196 bits\n");
+    printf("3.256 bits\n");
+    scanf("%d", &choixMenu);
+    switch (choixMenu)
+    {
+    case 1:
+        int cle[128];
+        cle = creationCle(128);
+        chiffrementAES128(cle);
+        break;
+    case 2:
+        int cle[196];
+        cle = creationCle(196);
+        chiffrementAES196(cle);
+        break;
+    case 3:
+        int cle[256];
+        cle = creationCle(256);
+        chiffrementAES256(cle);
+        break;
+    default:
+        printf("Erreur, taille de clé incorrecte !\n\n");
+        exit 0;
+        break;
+    }
+     
 }
 
 void chiffrementElGamal()
 {
-    printf("Vous avez choisi le chiffrement El-Gamal!\n\n");
+    printf("Vous avez choisi le chiffrement El-Gamal !\n\n");
 }
 
 void signatureElGamal()
 {
-    printf("Vous avez choisi la signature El-Gamal!\n\n");
+    printf("Vous avez choisi la signature El-Gamal !\n\n");
 }
 
 int main(int argc, char *argv[])
@@ -137,7 +194,7 @@ int main(int argc, char *argv[])
             signatureElGamal();
             break;    
         default:
-            printf("Choix non valide!\n\n");
+            printf("Erreur, choix non valide !\n\n");
             break;
     }
   	return 0;
