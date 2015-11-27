@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gmp-6.0.0/gmp.h"
-#include <gmp.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -19,7 +18,9 @@ int affichageMenu()
 
 void chiffrementAES()
 {
+    int choixMenu;
     mpz_t clef;
+    mpz_init(clef);
     printf("Vous avez choisi le chiffrement AES!\n\n");
     printf("Vous utilisez une clé de 1. 128 bits   2. 196 bits   3. 256 bits\n");
     scanf("%d", &choixMenu);
@@ -29,7 +30,7 @@ void chiffrementAES()
     }
     if (choixMenu==1){
         printf("Veuillez précisez votre clé\n");
-        gmp_scanf(&clef) ;//on recupere la clef
+        gmp_scanf("%s",&clef);//on recupere la clef
         // Partie ou on demande le fichier à chiffrer.
 
     }
@@ -66,13 +67,13 @@ void chiffrementAES128(mpz_t *clef){
      else{
         //On récupère le tableau qu'on va mettre dans la round
         for (i=0;i<4;i++){
-            for (j=0;j<4,j++){
+            for (j=0;j<4;j++){
                 tableau[i][j]=fgetc(fichier);
             }
         }
         //On applique sbox au tableau
         for (i=0;i<4;i++){
-            for (j=0;j<4,j++){
+            for (j=0;j<4;j++){
                 intermediaire=tableau[i][j];
                 tabSboxed[i][j]=sbox[intermediaire];
             }
@@ -95,12 +96,12 @@ void chiffrementAES128(mpz_t *clef){
         // char * mpz_get_str (char *str, int base, const mpz_t op)   https://gmplib.org/manual/Converting-Integers.html
         mpz_get_str (tabInterm, 10, clef);
         for (i=0;i<4;i++){
-            for (j=0;j<4,j++){
+            for (j=0;j<4;j++){
                 tabKey[i][j]=tabInterm[i*4+j];
             }
         }
         for (i=0;i<4;i++){
-            for (j=0;j<4,j++){
+            for (j=0;j<4;j++){
                 tableau[i][j]=tabSboxed[i][j]^tabKey[i][j];
             }
         }
