@@ -83,9 +83,9 @@ char ** shiftRows(char **state)
     return state;
 }
 
-void keyExpansion()
+char * keyExpansion(int *cle)
 {
-
+    return subBytes(cle);
 }
 
 int * creationCle(int tailleCle)
@@ -110,18 +110,39 @@ void chiffrementAES128(int *cle)
 {
      FILE* fichier = NULL;
      fichier = fopen ("test.txt", "r");
+     char temp = '0';
      char bloc[4][4];
      if (fichier == NULL){
         printf ("Erreur dans l'ouverture du fichier !\n");
      }
      else{
         //On récupère le tableau qu'on va mettre dans la round
-        for (int i = 0; i < 4; i++){
-            for (int j = 0; j < 4; j++){
-                bloc[i][j] = fgetc(fichier);
+        while (temp != EOF)
+        {   
+            for (int i = 0; i < 4; ++i)
+            {
+                for (int j = 0; j < 4; ++j)
+                {
+                    bloc[i][j] = 0;
+                }
             }
+            int k = 0;
+            int l = 0;
+            while (temp != EOF && k<4)
+            {
+                while (temp != EOF && l<4)
+                {
+                    temp = fgetc(fichier);
+                    if (temp != EOF)
+                    {
+                        bloc[i][j] = temp; 
+                    }
+                    l++;
+                }
+                k++;
+            }
+            // Mettre toutes les fonctions ici
         }
-        // Mettre toutes les fonctions ici
         fclose (fichier);
      }
 }
