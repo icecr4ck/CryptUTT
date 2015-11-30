@@ -85,6 +85,10 @@ char ** shiftRows(char **state)
 
 char * keyExpansion(int *cle)
 {
+    for (int i = 0; i < 16 ; ++i)
+    {
+        cleChar[i] = char(cle[i]);
+    }
     return subBytes(cle);
 }
 
