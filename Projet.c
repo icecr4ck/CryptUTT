@@ -59,10 +59,75 @@ char ** mixColumns(char **bloc)
 {
     for (int i = 0; i < 4; ++i)
     {
-        bloc[0][i] = (2*bloc[0][i]) ^ (3*bloc[1][i]) ^ bloc[2][i] ^ bloc[3][i]; 
-        bloc[1][i] = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i]; 
-        bloc[2][i] = bloc[0][i] ^ bloc[1][i] ^ (2*bloc[2][i]) ^ (3*bloc[3][i]); 
-        bloc[3][i] = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]); 
+        int a=0, temp=0;
+        temp = (2*bloc[0][i]) ^ (3*bloc[1][i]) ^ bloc[2][i] ^ bloc[3][i];
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        bloc[0][i]=char(temp);
+        temp = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i]; 
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        bloc[1][i]=char(temp);
+        temp = bloc[0][i] ^ bloc[1][i] ^ (2*bloc[2][i]) ^ (3*bloc[3][i]);
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        bloc[2][i]=char(temp); 
+        temp = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]); 
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        bloc[3][i]=char(temp);
     }
     return bloc;
     // A voir pour la multiplication
@@ -86,7 +151,7 @@ char ** shiftRows(char **state)
 char * keyExpansion(int *cle)
 {
     for (int i = 0; i < 16 ; ++i)
-    {
+    { 
         cleChar[i] = char(cle[i]);
     }
     return subBytes(cle);
@@ -145,6 +210,7 @@ void chiffrementAES128(int *cle)
                 }
                 k++;
             }
+
             // Mettre toutes les fonctions ici
         }
         fclose (fichier);
@@ -223,4 +289,15 @@ int main(int argc, char *argv[])
             break;
     }
   	return 0;
+}
+
+void test_rabinMiller(*nbATester){
+    int rep;
+    mpz_class resultat, a(2), b(1);
+    mpz_mod(resultat, nbATester,  a); //resultat=1 si nbatester impair sinon resultat=0
+    rep= mpz_cmp(b,resultat);//si b=resultat, rep=0. Si b>resultat, rep=1.
+    if (rep==1)
+    {
+        gmp_printf ("Nombre pair %Zd\n", "here", nbATester);   
+    }
 }
