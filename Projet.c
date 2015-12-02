@@ -133,7 +133,6 @@ char ** mixColumns(char **bloc)
         bloc[3][i]=(char)temp;
     }
     return bloc;
-    // A voir pour la multiplication
 }
 
 char ** shiftRows(char **state)
@@ -167,7 +166,7 @@ int * keyExpansion(int *cle)
             cle2D[i][j]=cleChar[i*4+j];
         }
     }
-    cle2D=subBytes(cle2D);
+    strcpy(cle2D, subBytes(cle2D));
     for (int i = 0; i<4; i++)
     {
         for (int j = 0; j<4; j++)
@@ -235,19 +234,19 @@ void chiffrementAES128(int *cle)
                 }
                 k++;
             }
-            bloc = addRoundKey(bloc, cle);
+            strcpy(bloc, addRoundKey(bloc, cle));
             for (int i=0; i<Nr; i++ )
             {
-                bloc=subBytes(bloc);
-                bloc=shiftRows(bloc);
-                bloc=mixColumns(bloc);
-                cle=keyExpansion(cle);
-                bloc=addRoundKey(bloc, cle);
+                strcpy(bloc, subBytes(bloc));
+                strcpy(bloc, shiftRows(bloc));
+                strcpy(bloc, mixColumns(bloc));
+                strcpy(cle, keyExpansion(cle));
+                strcpy(bloc, addRoundKey(bloc, cle));
             }
-            bloc=subBytes(bloc);
-            bloc=shiftRows(bloc);
-            cle=keyExpansion(cle);
-            bloc=addRoundKey(bloc, cle);
+            strcpy(bloc, subBytes(bloc));
+            strcpy(bloc, shiftRows(bloc));
+            strcpy(cle, keyExpansion(cle));
+            strcpy(bloc, addRoundKey(bloc, cle));
             if (cipher == NULL){
                  printf ("Erreur dans l'ouverture du fichier cipher !\n");
             }
