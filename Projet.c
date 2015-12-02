@@ -4,10 +4,9 @@
 #include <string.h>
 #include <math.h>
 #include <sys/stat.h>
-//cacacacac
 
 int affichageMenu()
-{ 
+{
     int choixMenu = 0;
     printf("--> Sélectionner votre fonction de chiffrement <--\n");
     printf("1.Chiffrement AES\n");
@@ -30,7 +29,7 @@ char ** addRoundKey(char **state, int *cle)
 
 char ** subBytes(char **bloc)
 {
-    unsigned char sbytes[256] = 
+    unsigned char sbytes[256] =
     {
         0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
         0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -59,7 +58,7 @@ char ** subBytes(char **bloc)
 
 char ** mixColumns(char **bloc)
 {
-    
+
     for (int i = 0; i < 4; ++i)
     {
         int a=0;
@@ -81,7 +80,7 @@ char ** mixColumns(char **bloc)
             temp=temp-256;
         }
         bloc[0][i]=(char)temp;
-        temp = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i]; 
+        temp = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i];
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -114,8 +113,8 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[2][i]=(char)temp; 
-        temp = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]); 
+        bloc[2][i]=(char)temp;
+        temp = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]);
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -153,12 +152,12 @@ char ** shiftRows(char **state)
     return state;
 }
 
-char ** keyExpansion(int *cle)
+int * keyExpansion(int *cle)
 {
     char cleChar[16];
     char cle2D[4][4];
     for (int i = 0; i < 16 ; ++i)
-    { 
+    {
         cleChar[i] = (char)cle[i];
     }
     for (int i = 0; i < 4; ++i)
@@ -168,7 +167,15 @@ char ** keyExpansion(int *cle)
             cle2D[i][j]=cleChar[i*4+j];
         }
     }
-    return subBytes(cleChar);
+    cle2D=subBytes(cle2D);
+    for (int i = 0; i<4; i++)
+    {
+        for (int j = 0; j<4; j++)
+        {
+            cle[i*4+j]=(int)cle2D[i][j];
+        }
+    }
+    return cle;
 }
 
 int * creationCle(int tailleCle)
@@ -179,30 +186,33 @@ int * creationCle(int tailleCle)
     srand(mot_passe);
     tailleCle=sqrt(tailleCle/8);
     int cle[tailleCle][tailleCle];
-    for (int i = 0; i < tailleCle ; i++ ) 
+    for (int i = 0; i < tailleCle ; i++ )
         {
         for (int j = 0; j < tailleCle ; ++j)
         {
             cle[i][j] = rand()%2;
             cle[i][j] = (char)cle[i][j];
-        }   
-    } 
+        }
+    }
     return cle;
 }
 
 void chiffrementAES128(int *cle)
 {
      FILE* fichier = NULL;
+     FILE* cipher = NULL;
      fichier = fopen ("test.txt", "r");
+     cipher = fopen ("cipher.txt", "w");
      char temp = '0';
      char bloc[4][4];
+     int Nr = 10;
      if (fichier == NULL){
         printf ("Erreur dans l'ouverture du fichier !\n");
      }
      else{
         //On récupère le tableau qu'on va mettre dans la round
         while (temp != EOF)
-        {   
+        {
             for (int i = 0; i < 4; ++i)
             {
                 for (int j = 0; j < 4; ++j)
@@ -219,15 +229,39 @@ void chiffrementAES128(int *cle)
                     temp = fgetc(fichier);
                     if (temp != EOF)
                     {
-                        bloc[k][l] = temp; 
+                        bloc[k][l] = temp;
                     }
                     l++;
                 }
                 k++;
             }
-
-            // Mettre toutes les fonctions ici
+            bloc = addRoundKey(bloc, cle);
+            for (int i=0; i<Nr; i++ )
+            {
+                bloc=subBytes(bloc);
+                bloc=shiftRows(bloc);
+                bloc=mixColumns(bloc);
+                cle=keyExpansion(cle);
+                bloc=addRoundKey(bloc, cle);
+            }
+            bloc=subBytes(bloc);
+            bloc=shiftRows(bloc);
+            cle=keyExpansion(cle);
+            bloc=addRoundKey(bloc, cle);
+            if (cipher == NULL){
+                 printf ("Erreur dans l'ouverture du fichier cipher !\n");
+            }
+            else{
+                for (int i=0; i<4; i++)
+                {
+                     for (int j=0; j<4; j++)
+                     {
+                         fputc(bloc[i][j], cipher);
+                     }
+                }
+            }
         }
+        fclose (cipher);
         fclose (fichier);
      }
 }
@@ -271,7 +305,7 @@ void chiffrementAES()
         exit(1);
         break;
     }
-     
+
 }
 
 void chiffrementElGamal()
@@ -296,7 +330,7 @@ int main(int argc, char *argv[])
             break;
         case 3:
             signatureElGamal();
-            break;    
+            break;
         default:
             printf("Erreur, choix non valide !\n\n");
             break;
@@ -316,7 +350,7 @@ void test_rabinMiller(mpz_t nbATester){
     rep= mpz_cmp(b,resultat);//si b=resultat, rep=0. Si b>resultat, rep=1.
     if (rep==1)
     {
-        gmp_printf ("Nombre pair %Zd\n", "here", nbATester);   
+        gmp_printf ("Nombre pair %Zd\n", "here", nbATester);
     }
     mpz_clear(resultat);
     mpz_clear(a);
