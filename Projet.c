@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "gmp-6.0.0/gmp.h"
 #include <string.h>
+#include <math.h>
 #include <sys/stat.h>
 //cacacacac
 
@@ -152,12 +153,20 @@ char ** shiftRows(char **state)
     return state;
 }
 
-char * keyExpansion(int *cle)
+char ** keyExpansion(int *cle)
 {
     char cleChar[16];
+    char cle2D[4][4];
     for (int i = 0; i < 16 ; ++i)
     { 
         cleChar[i] = (char)cle[i];
+    }
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            cle2D[i][j]=cleChar[i*4+j];
+        }
     }
     return subBytes(cleChar);
 }
@@ -168,14 +177,15 @@ int * creationCle(int tailleCle)
     printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
     scanf("%lu", &mot_passe);
     srand(mot_passe);
-    int cle[tailleCle];
-    for (int i = 0; i < tailleCle ; i++ ) {
-        if (i % 8 == 7) {
-            cle[i] = (cle[i-7] + cle[i-6] + cle[i-5] + cle[i-4] + cle[i-3] + cle[i-2] + cle[i-1]) % 2;
-        }
-        else {
-            cle[i] = rand()%2;
-        }
+    tailleCle=sqrt(tailleCle/8);
+    int cle[tailleCle][tailleCle];
+    for (int i = 0; i < tailleCle ; i++ ) 
+        {
+        for (int j = 0; j < tailleCle ; ++j)
+        {
+            cle[i][j] = rand()%2;
+            cle[i][j] = (char)cle[i][j];
+        }   
     } 
     return cle;
 }
