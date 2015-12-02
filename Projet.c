@@ -57,9 +57,11 @@ char ** subBytes(char **bloc)
 
 char ** mixColumns(char **bloc)
 {
+    
     for (int i = 0; i < 4; ++i)
     {
-        int a=0, temp=0;
+        int a=0;
+        int temp=0;
         temp = (2*bloc[0][i]) ^ (3*bloc[1][i]) ^ bloc[2][i] ^ bloc[3][i];
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
@@ -76,7 +78,7 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[0][i]=char(temp);
+        bloc[0][i]=(char)temp;
         temp = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i]; 
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
@@ -93,7 +95,7 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[1][i]=char(temp);
+        bloc[1][i]=(char)temp;
         temp = bloc[0][i] ^ bloc[1][i] ^ (2*bloc[2][i]) ^ (3*bloc[3][i]);
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
@@ -110,7 +112,7 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[2][i]=char(temp); 
+        bloc[2][i]=(char)temp; 
         temp = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]); 
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
@@ -127,7 +129,7 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[3][i]=char(temp);
+        bloc[3][i]=(char)temp;
     }
     return bloc;
     // A voir pour la multiplication
@@ -135,6 +137,7 @@ char ** mixColumns(char **bloc)
 
 char ** shiftRows(char **state)
 {
+    int temp=0;
     for (int i = 0; i < 4; ++i) //Pour chaque ligne
     {
         for (int j = i; j > 0; j--){ //On effectue un nombre de décalage vers la droite du tableau correspondant à la ligne
@@ -150,11 +153,12 @@ char ** shiftRows(char **state)
 
 char * keyExpansion(int *cle)
 {
+    char cleChar[16];
     for (int i = 0; i < 16 ; ++i)
     { 
-        cleChar[i] = char(cle[i]);
+        cleChar[i] = (char)cle[i];
     }
-    return subBytes(cle);
+    return subBytes(cleChar);
 }
 
 int * creationCle(int tailleCle)
@@ -204,7 +208,7 @@ void chiffrementAES128(int *cle)
                     temp = fgetc(fichier);
                     if (temp != EOF)
                     {
-                        bloc[i][j] = temp; 
+                        bloc[k][l] = temp; 
                     }
                     l++;
                 }
@@ -230,6 +234,7 @@ void chiffrementAES256(int *cle)
 void chiffrementAES()
 {
     int choixMenu;
+    int *cle;
     printf("Vous avez choisi le chiffrement AES !\n\n");
     printf("--> Sélectionner la taille de clé <--\n");
     printf("1.128 bits\n");
@@ -239,23 +244,20 @@ void chiffrementAES()
     switch (choixMenu)
     {
     case 1:
-        int cle[128];
         cle = creationCle(128);
         chiffrementAES128(cle);
         break;
     case 2:
-        int cle[196];
         cle = creationCle(196);
         chiffrementAES196(cle);
         break;
     case 3:
-        int cle[256];
         cle = creationCle(256);
         chiffrementAES256(cle);
         break;
     default:
         printf("Erreur, taille de clé incorrecte !\n\n");
-        exit 0;
+        exit(1);
         break;
     }
      
@@ -291,13 +293,21 @@ int main(int argc, char *argv[])
   	return 0;
 }
 
-void test_rabinMiller(*nbATester){
+void test_rabinMiller(mpz_t nbATester){
     int rep;
-    mpz_class resultat, a(2), b(1);
+    mpz_t resultat, a, b;
+    mpz_init(resultat);
+    mpz_init(a);
+    mpz_init(b);
+    mpz_init_set_str(a, "2", 10);
+    mpz_init_set_str(b, "1", 10);
     mpz_mod(resultat, nbATester,  a); //resultat=1 si nbatester impair sinon resultat=0
     rep= mpz_cmp(b,resultat);//si b=resultat, rep=0. Si b>resultat, rep=1.
     if (rep==1)
     {
         gmp_printf ("Nombre pair %Zd\n", "here", nbATester);   
     }
+    mpz_clear(resultat);
+    mpz_clear(a);
+    mpz_clear(b);
 }
