@@ -3,6 +3,7 @@
 #include "gmp-6.0.0/gmp.h"
 #include <string.h>
 #include <sys/stat.h>
+//cacacacac
 
 int affichageMenu()
 { 
