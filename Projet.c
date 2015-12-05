@@ -17,17 +17,16 @@ int affichageMenu()
     return choixMenu;
 }
 
-char ** addRoundKey(char **state, int *cle)
+void addRoundKey(unsigned char **state, unsigned char *cle)
 {
     for (int i = 0; i < 4; i++){
         for (int j = 0; j < 4; j++){
             state[i][j] = state[i][j] ^ cle[i*4+j];
         }
     }
-    return state;
 }
 
-char ** subBytes(char **bloc)
+void subBytes(unsigned char **state)
 {
     unsigned char sbytes[256] =
     {
@@ -50,20 +49,18 @@ char ** subBytes(char **bloc)
      };
      for (int i = 0;i < 4; i++){
         for (int j = 0; j < 4; j++){
-            bloc[i][j]=sbytes[bloc[i][j]];
+            state[i][j]=sbytes[state[i][j]];
         }
     }
-    return bloc;
 }
 
-char ** mixColumns(char **bloc)
+void mixColumns(unsigned char **state)
 {
-
     for (int i = 0; i < 4; ++i)
     {
         int a=0;
         int temp=0;
-        temp = (2*bloc[0][i]) ^ (3*bloc[1][i]) ^ bloc[2][i] ^ bloc[3][i];
+        temp = (2*state[0][i]) ^ (3*state[1][i]) ^ state[2][i] ^ state[3][i];
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -79,8 +76,8 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[0][i]=(char)temp;
-        temp = bloc[0][i] ^ (2*bloc[1][i]) ^ (3*bloc[2][i]) ^ bloc[3][i];
+        state[0][i]=(char)temp;
+        temp = state[0][i] ^ (2*state[1][i]) ^ (3*state[2][i]) ^ state[3][i];
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -96,8 +93,8 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[1][i]=(char)temp;
-        temp = bloc[0][i] ^ bloc[1][i] ^ (2*bloc[2][i]) ^ (3*bloc[3][i]);
+        state[1][i]=(char)temp;
+        temp = state[0][i] ^ state[1][i] ^ (2*state[2][i]) ^ (3*state[3][i]);
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -113,8 +110,8 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[2][i]=(char)temp;
-        temp = (3*bloc[0][i]) ^ bloc[1][i] ^ bloc[2][i] ^ (2*bloc[3][i]);
+        state[2][i]=(char)temp;
+        temp = (3*state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2*state[3][i]);
         if (temp>=1024) // (1024) dec = 100 0000 0000binaire
         {
             temp=temp ^ 108; //108dec = 110 1100bin
@@ -130,14 +127,13 @@ char ** mixColumns(char **bloc)
             temp=temp ^ 27;//27dec = 1 1011
             temp=temp-256;
         }
-        bloc[3][i]=(char)temp;
+        state[3][i]=(char)temp;
     }
-    return bloc;
 }
 
-char ** shiftRows(char **state)
+void shiftRows(unsigned char **state)
 {
-    int temp=0;
+    unsigned char temp='0';
     for (int i = 0; i < 4; ++i) //Pour chaque ligne
     {
         for (int j = i; j > 0; j--){ //On effectue un nombre de décalage vers la droite du tableau correspondant à la ligne
@@ -148,22 +144,21 @@ char ** shiftRows(char **state)
             state[i][3]=temp;
         }
     }
-    return state;
 }
 
-int * keyExpansion(int *cle)
+void keyExpansion(unsigned char *cle)
 {
-    char cleChar[16];
-    char cle2D[4][4];
+    unsigned char cleChar[16];
+    unsigned char cle2D[4][4];
     for (int i = 0; i < 16 ; ++i)
     {
-        cleChar[i] = (char)cle[i];
+        cleChar[i] = cle[i];
     }
     for (int i = 0; i < 4; ++i)
     {
         for (int j = 0; j < 4; ++j)
         {
-            cle2D[i][j]=cleChar[i*4+j];
+            cle2D[i][j] = cleChar[i*4+j];
         }
     }
     strcpy(cle2D, subBytes(cle2D));
@@ -171,20 +166,19 @@ int * keyExpansion(int *cle)
     {
         for (int j = 0; j<4; j++)
         {
-            cle[i*4+j]=(int)cle2D[i][j];
+            cle[i*4+j] = cle2D[i][j];
         }
     }
-    return cle;
 }
 
-int * creationCle(int tailleCle)
+unsigned char * creationCle(int tailleCle)
 {
     unsigned long mot_passe;
     printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
     scanf("%lu", &mot_passe);
     srand(mot_passe);
     tailleCle=sqrt(tailleCle/8);
-    int cle[tailleCle][tailleCle];
+    unsigned char cle[tailleCle][tailleCle];
     for (int i = 0; i < tailleCle ; i++ )
         {
         for (int j = 0; j < tailleCle ; ++j)
@@ -196,14 +190,14 @@ int * creationCle(int tailleCle)
     return cle;
 }
 
-void chiffrementAES128(int *cle)
+void chiffrementAES128(unsigned char *cle)
 {
      FILE* fichier = NULL;
      FILE* cipher = NULL;
      fichier = fopen ("test.txt", "r");
      cipher = fopen ("cipher.txt", "w");
-     char temp = '0';
-     char bloc[4][4];
+     unsigned char temp = '0';
+     unsigned char state[4][4];
      int Nr = 10;
      if (fichier == NULL){
         printf ("Erreur dans l'ouverture du fichier !\n");
@@ -216,7 +210,7 @@ void chiffrementAES128(int *cle)
             {
                 for (int j = 0; j < 4; ++j)
                 {
-                    bloc[i][j] = 0;
+                    state[i][j] = 0;
                 }
             }
             int k = 0;
@@ -228,25 +222,25 @@ void chiffrementAES128(int *cle)
                     temp = fgetc(fichier);
                     if (temp != EOF)
                     {
-                        bloc[k][l] = temp;
+                        state[k][l] = temp;
                     }
                     l++;
                 }
                 k++;
             }
-            strcpy(bloc, addRoundKey(bloc, cle));
+            addRoundKey(state, cle);
             for (int i=0; i<Nr; i++ )
             {
-                strcpy(bloc, subBytes(bloc));
-                strcpy(bloc, shiftRows(bloc));
-                strcpy(bloc, mixColumns(bloc));
-                strcpy(cle, keyExpansion(cle));
-                strcpy(bloc, addRoundKey(bloc, cle));
+                subBytes(state);
+                shiftRows(state);
+                mixColumns(state);
+                keyExpansion(cle);
+                addRoundKey(state, cle);
             }
-            strcpy(bloc, subBytes(bloc));
-            strcpy(bloc, shiftRows(bloc));
-            strcpy(cle, keyExpansion(cle));
-            strcpy(bloc, addRoundKey(bloc, cle));
+            subBytes(state);
+            shiftRows(state);
+            keyExpansion(cle);
+            addRoundKey(state, cle);
             if (cipher == NULL){
                  printf ("Erreur dans l'ouverture du fichier cipher !\n");
             }
@@ -255,7 +249,7 @@ void chiffrementAES128(int *cle)
                 {
                      for (int j=0; j<4; j++)
                      {
-                         fputc(bloc[i][j], cipher);
+                         fputc(state[i][j], cipher);
                      }
                 }
             }
