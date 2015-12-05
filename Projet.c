@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "gmp-6.0.0/gmp.h"
 
 void addRoundKey(unsigned char *state, unsigned char *cle)
 {
