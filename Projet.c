@@ -1,32 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gmp-6.0.0/gmp.h"
-#include <string.h>
-#include <math.h>
-#include <sys/stat.h>
 
-int affichageMenu()
+void addRoundKey(unsigned char *state, unsigned char *cle)
 {
-    int choixMenu = 0;
-    printf("--> Sélectionner votre fonction de chiffrement <--\n");
-    printf("1.Chiffrement AES\n");
-    printf("2.Chiffrement El-Gamal\n");
-    printf("3.Signature El-Gamal\n");
-    printf("\nVotre choix?\n");
-    scanf("%d", &choixMenu);
-    return choixMenu;
-}
-
-void addRoundKey(unsigned char **state, unsigned char *cle)
-{
-    for (int i = 0; i < 4; i++){
-        for (int j = 0; j < 4; j++){
-            state[i][j] = state[i][j] ^ cle[i*4+j];
-        }
+    for (int i = 0; i < 16; i++){
+        state[i] = state[i] ^ cle[i];
     }
 }
 
-void subBytes(unsigned char **state)
+void subBytes(unsigned char *state)
 {
     unsigned char sbytes[256] =
     {
@@ -46,225 +29,157 @@ void subBytes(unsigned char **state)
         0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
-     };
-     for (int i = 0;i < 4; i++){
-        for (int j = 0; j < 4; j++){
-            state[i][j]=sbytes[state[i][j]];
-        }
+    };
+    for (int i = 0;i < 4; i++){
+        state[i] = sbytes[state[i]];
     }
 }
 
-void mixColumns(unsigned char **state)
+int moduloMixColumns(int temp)
+{
+    if (temp >= 1024)
+    {
+        temp = temp ^ 108;
+        temp = temp - 1024;
+    }
+    if (temp >= 512)
+    {
+        temp = temp ^ 54;
+        temp = temp - 512;
+    }
+    if (temp >= 256)
+    {
+        temp = temp ^ 27;
+        temp = temp - 256;
+    }
+    return temp;
+}
+
+void mixColumns(unsigned char *state)
 {
     for (int i = 0; i < 4; ++i)
     {
-        int a=0;
         int temp=0;
-        temp = (2*state[0][i]) ^ (3*state[1][i]) ^ state[2][i] ^ state[3][i];
-        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
-        {
-            temp=temp ^ 108; //108dec = 110 1100bin
-            temp=temp-1024;
-        }
-        if(temp>=512)
-        {
-            temp= temp ^ 54;//54dec = 11 0110
-            temp=temp-512;
-        }
-        if (temp>=256)
-        {
-            temp=temp ^ 27;//27dec = 1 1011
-            temp=temp-256;
-        }
-        state[0][i]=(char)temp;
-        temp = state[0][i] ^ (2*state[1][i]) ^ (3*state[2][i]) ^ state[3][i];
-        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
-        {
-            temp=temp ^ 108; //108dec = 110 1100bin
-            temp=temp-1024;
-        }
-        if(temp>=512)
-        {
-            temp= temp ^ 54;//54dec = 11 0110
-            temp=temp-512;
-        }
-        if (temp>=256)
-        {
-            temp=temp ^ 27;//27dec = 1 1011
-            temp=temp-256;
-        }
-        state[1][i]=(char)temp;
-        temp = state[0][i] ^ state[1][i] ^ (2*state[2][i]) ^ (3*state[3][i]);
-        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
-        {
-            temp=temp ^ 108; //108dec = 110 1100bin
-            temp=temp-1024;
-        }
-        if(temp>=512)
-        {
-            temp= temp ^ 54;//54dec = 11 0110
-            temp=temp-512;
-        }
-        if (temp>=256)
-        {
-            temp=temp ^ 27;//27dec = 1 1011
-            temp=temp-256;
-        }
-        state[2][i]=(char)temp;
-        temp = (3*state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2*state[3][i]);
-        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
-        {
-            temp=temp ^ 108; //108dec = 110 1100bin
-            temp=temp-1024;
-        }
-        if(temp>=512)
-        {
-            temp= temp ^ 54;//54dec = 11 0110
-            temp=temp-512;
-        }
-        if (temp>=256)
-        {
-            temp=temp ^ 27;//27dec = 1 1011
-            temp=temp-256;
-        }
-        state[3][i]=(char)temp;
+        // Mélange de la première colonne
+        temp = (2*state[0+i*4]) ^ (3*state[1+i*4]) ^ state[2+i*4] ^ state[3+i*4];
+        temp = moduloMixColumns(temp);
+        state[0+i*4]=(char)temp;
+        // Mélange de la deuxième colonne
+        temp = state[0+i*4] ^ (2*state[1+i*4]) ^ (3*state[2+i*4]) ^ state[3+i*4];
+        temp = moduloMixColumns(temp);
+        state[1+i*4]=(char)temp;
+        // Mélange de la troisième colonne
+        temp = state[0+i*4] ^ state[1+i*4] ^ (2*state[2+i*4]) ^ (3*state[3+i*4]);
+        temp = moduloMixColumns(temp);
+        state[2+i*4]=(char)temp;
+        // Mélange de la dernière colonne
+        temp = (3*state[0+i*4]) ^ state[1+i*4] ^ state[2+i*4] ^ (2*state[3+i*4]);
+        temp = moduloMixColumns(temp);
+        state[2+i*4]=(char)temp;
     }
 }
 
-void shiftRows(unsigned char **state)
+void shiftRows(unsigned char *state)
 {
-    unsigned char temp='0';
-    for (int i = 0; i < 4; ++i) //Pour chaque ligne
+    // Deuxième ligne on décale de 1 à gauche
+    for(int j=0; j<3; j++)
     {
-        for (int j = i; j > 0; j--){ //On effectue un nombre de décalage vers la droite du tableau correspondant à la ligne
-            temp=state[i][0];
-            state[i][0]=state[i][1];
-            state[i][1]=state[i][2];
-            state[i][2]=state[i][3];
-            state[i][3]=temp;
-        }
+        state[4*j+1] = state[4*(j+1)+1];
     }
+    state[13] = state[1];
+    // Troisième ligne on décale de 2 à gauche
+    for(int j=0; j<2; j++)
+    {
+        state[4*j+2] = state[4*(j+2)+2];
+        state[4*(j+2)+2] = state[4*j+2];
+    }
+    // Quatrième ligne on décale de 3 à droite
+    for(int j=1; j<4; j++)
+    {
+        state[4*j+3] = state[4*(j-1)+3];
+    }
+    state[3] = state[15];
 }
 
 void keyExpansion(unsigned char *cle)
 {
-    unsigned char cleChar[16];
-    unsigned char cle2D[4][4];
-    for (int i = 0; i < 16 ; ++i)
-    {
-        cleChar[i] = cle[i];
-    }
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            cle2D[i][j] = cleChar[i*4+j];
-        }
-    }
-    strcpy(cle2D, subBytes(cle2D));
-    for (int i = 0; i<4; i++)
-    {
-        for (int j = 0; j<4; j++)
-        {
-            cle[i*4+j] = cle2D[i][j];
-        }
-    }
+    subBytes(cle);
 }
 
-unsigned char * creationCle(int tailleCle)
+void roundAES(unsigned char *state, unsigned char *cle, int Nr)
 {
-    unsigned long mot_passe;
+    addRoundKey(state, cle);
+    for (int i=0; i<Nr; i++)
+    {
+        subBytes(state);
+        shiftRows(state);
+        mixColumns(state);
+        keyExpansion(cle);
+        addRoundKey(state, cle);
+    }
+    subBytes(state);
+    shiftRows(state);
+    keyExpansion(cle);
+    addRoundKey(state, cle);
+}
+
+void chiffrementAES128()
+{
+    /*unsigned long mot_passe;
     printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
     scanf("%lu", &mot_passe);
-    srand(mot_passe);
-    tailleCle=sqrt(tailleCle/8);
-    unsigned char cle[tailleCle][tailleCle];
-    for (int i = 0; i < tailleCle ; i++ )
-        {
-        for (int j = 0; j < tailleCle ; ++j)
-        {
-            cle[i][j] = rand()%2;
-            cle[i][j] = (char)cle[i][j];
-        }
+    srand(mot_passe);*/
+    int Nr = 10;
+    unsigned char temp = '0';
+    unsigned char state[16];
+    unsigned char cle[16] = {'C', 'e', 'c', 'i', 'e', 's', 't', 'u', 'n', 'e', 'x', 'e', 'm', 'p', 'l', 'e'};
+    FILE* clair = NULL;
+    FILE* cipher = NULL;
+    clair = fopen("test.txt", "r");
+    cipher = fopen("cipher.txt", "w");
+    if (clair == NULL || cipher == NULL)
+    {
+        printf ("Erreur dans l'ouverture du fichier !\n\n");
     }
-    return cle;
-}
-
-void chiffrementAES128(unsigned char *cle)
-{
-     FILE* fichier = NULL;
-     FILE* cipher = NULL;
-     fichier = fopen ("test.txt", "r");
-     cipher = fopen ("cipher.txt", "w");
-     unsigned char temp = '0';
-     unsigned char state[4][4];
-     int Nr = 10;
-     if (fichier == NULL){
-        printf ("Erreur dans l'ouverture du fichier !\n");
-     }
-     else{
-        //On récupère le tableau qu'on va mettre dans la round
+    else
+    {
         while (temp != EOF)
         {
-            for (int i = 0; i < 4; ++i)
+            // On remplit le bloc de 0
+            for (int i=0; i<16; i++)
             {
-                for (int j = 0; j < 4; ++j)
-                {
-                    state[i][j] = 0;
-                }
+                state[i] = 0;
             }
-            int k = 0;
-            int l = 0;
-            while (temp != EOF && k<4)
+            // Puis on met les valeurs du fichier dans le bloc
+            int i = 0;
+            while (temp != EOF && i<16)
             {
-                while (temp != EOF && l<4)
+                temp = fgetc(clair);
+                if (temp != EOF)
                 {
-                    temp = fgetc(fichier);
-                    if (temp != EOF)
-                    {
-                        state[k][l] = temp;
-                    }
-                    l++;
+                    state[i] = temp;
                 }
-                k++;
+                i++;
             }
-            addRoundKey(state, cle);
-            for (int i=0; i<Nr; i++ )
+            // On effectue une round AES
+            roundAES(state, cle, Nr);
+            // On écrit le bloc chiffré dans un fichier de sortie
+            for (int i=0; i<16; i++)
             {
-                subBytes(state);
-                shiftRows(state);
-                mixColumns(state);
-                keyExpansion(cle);
-                addRoundKey(state, cle);
-            }
-            subBytes(state);
-            shiftRows(state);
-            keyExpansion(cle);
-            addRoundKey(state, cle);
-            if (cipher == NULL){
-                 printf ("Erreur dans l'ouverture du fichier cipher !\n");
-            }
-            else{
-                for (int i=0; i<4; i++)
-                {
-                     for (int j=0; j<4; j++)
-                     {
-                         fputc(state[i][j], cipher);
-                     }
-                }
+                fputc(state[i], cipher);
             }
         }
         fclose (cipher);
-        fclose (fichier);
-     }
+        fclose (clair);
+    }
 }
 
-void chiffrementAES196(int *cle)
+void chiffrementAES196()
 {
 
 }
 
-void chiffrementAES256(int *cle)
+void chiffrementAES256()
 {
 
 }
@@ -282,20 +197,16 @@ void chiffrementAES()
     switch (choixMenu)
     {
     case 1:
-        cle = creationCle(128);
-        chiffrementAES128(cle);
+        chiffrementAES128();
         break;
     case 2:
-        cle = creationCle(196);
-        chiffrementAES196(cle);
+        chiffrementAES196();
         break;
     case 3:
-        cle = creationCle(256);
-        chiffrementAES256(cle);
+        chiffrementAES256();
         break;
     default:
         printf("Erreur, taille de clé incorrecte !\n\n");
-        exit(1);
         break;
     }
 
@@ -313,7 +224,14 @@ void signatureElGamal()
 
 int main(int argc, char *argv[])
 {
-    switch(affichageMenu())
+    int choixMenu = 0;
+    printf("--> Sélectionner votre fonction de chiffrement <--\n");
+    printf("1.Chiffrement AES\n");
+    printf("2.Chiffrement El-Gamal\n");
+    printf("3.Signature El-Gamal\n");
+    printf("\nVotre choix?\n");
+    scanf("%d", &choixMenu);
+    switch(choixMenu)
     {
         case 1:
             chiffrementAES();
@@ -331,7 +249,7 @@ int main(int argc, char *argv[])
   	return 0;
 }
 
-void test_rabinMiller(mpz_t nbATester){
+/*void test_rabinMiller(mpz_t nbATester){
     int rep;
     mpz_t resultat, a, b;
     mpz_init(resultat);
@@ -348,4 +266,4 @@ void test_rabinMiller(mpz_t nbATester){
     mpz_clear(resultat);
     mpz_clear(a);
     mpz_clear(b);
-}
+}*/
