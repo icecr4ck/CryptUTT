@@ -3,12 +3,35 @@
 
 void addRoundKey(unsigned char *state, unsigned char *cle)
 {
+<<<<<<< HEAD
     for (int i = 0; i < 16; i++){
         state[i] = state[i] ^ cle[i];
     }
 }
 
 void subBytes(unsigned char *state)
+=======
+    int choixMenu = 0;
+    printf("--> Sélectionner votre fonction de chiffrement <--\n");
+    printf("1.Chiffrement AES\n");
+    printf("2.Chiffrement El-Gamal\n");
+    printf("3.Signature El-Gamal\n");
+    printf("\nVotre choix?\n");
+    scanf("%d", &choixMenu);
+    return choixMenu;
+}
+
+void addRoundKey(unsigned char **state, unsigned char *cle)
+{
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 4; j++){
+            state[i][j] = state[i][j] ^ cle[i*4+j];
+        }
+    }
+}
+
+void subBytes(unsigned char **state)
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
 {
     unsigned char sbytes[256] =
     {
@@ -28,6 +51,7 @@ void subBytes(unsigned char *state)
         0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
+<<<<<<< HEAD
     };
     for (int i = 0;i < 4; i++){
         state[i] = sbytes[state[i]];
@@ -57,6 +81,97 @@ int moduloMixColumns(int temp)
 void mixColumns(unsigned char *state)
 {
     for (int i = 0; i < 4; ++i)
+=======
+     };
+     for (int i = 0;i < 4; i++){
+        for (int j = 0; j < 4; j++){
+            state[i][j]=sbytes[state[i][j]];
+        }
+    }
+}
+
+void mixColumns(unsigned char **state)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        int a=0;
+        int temp=0;
+        temp = (2*state[0][i]) ^ (3*state[1][i]) ^ state[2][i] ^ state[3][i];
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        state[0][i]=(char)temp;
+        temp = state[0][i] ^ (2*state[1][i]) ^ (3*state[2][i]) ^ state[3][i];
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        state[1][i]=(char)temp;
+        temp = state[0][i] ^ state[1][i] ^ (2*state[2][i]) ^ (3*state[3][i]);
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        state[2][i]=(char)temp;
+        temp = (3*state[0][i]) ^ state[1][i] ^ state[2][i] ^ (2*state[3][i]);
+        if (temp>=1024) // (1024) dec = 100 0000 0000binaire
+        {
+            temp=temp ^ 108; //108dec = 110 1100bin
+            temp=temp-1024;
+        }
+        if(temp>=512)
+        {
+            temp= temp ^ 54;//54dec = 11 0110
+            temp=temp-512;
+        }
+        if (temp>=256)
+        {
+            temp=temp ^ 27;//27dec = 1 1011
+            temp=temp-256;
+        }
+        state[3][i]=(char)temp;
+    }
+}
+
+void shiftRows(unsigned char **state)
+{
+    unsigned char temp='0';
+    for (int i = 0; i < 4; ++i) //Pour chaque ligne
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
     {
         int temp=0;
         // Mélange de la première colonne
@@ -78,17 +193,28 @@ void mixColumns(unsigned char *state)
     }
 }
 
+<<<<<<< HEAD
 void shiftRows(unsigned char *state)
 {
     // Deuxième ligne on décale de 1 à gauche
     for(int j=0; j<3; j++)
     {
         state[4*j+1] = state[4*(j+1)+1];
+=======
+void keyExpansion(unsigned char *cle)
+{
+    unsigned char cleChar[16];
+    unsigned char cle2D[4][4];
+    for (int i = 0; i < 16 ; ++i)
+    {
+        cleChar[i] = cle[i];
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
     }
     state[13] = state[1];
     // Troisième ligne on décale de 2 à gauche
     for(int j=0; j<2; j++)
     {
+<<<<<<< HEAD
         state[4*j+2] = state[4*(j+2)+2];
         state[4*(j+2)+2] = state[4*j+2];
     }
@@ -115,6 +241,38 @@ void roundAES(unsigned char *state, unsigned char *cle, int Nr)
         mixColumns(state);
         keyExpansion(cle);
         addRoundKey(state, cle);
+=======
+        for (int j = 0; j < 4; ++j)
+        {
+            cle2D[i][j] = cleChar[i*4+j];
+        }
+    }
+    strcpy(cle2D, subBytes(cle2D));
+    for (int i = 0; i<4; i++)
+    {
+        for (int j = 0; j<4; j++)
+        {
+            cle[i*4+j] = cle2D[i][j];
+        }
+    }
+}
+
+unsigned char * creationCle(int tailleCle)
+{
+    unsigned long mot_passe;
+    printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
+    scanf("%lu", &mot_passe);
+    srand(mot_passe);
+    tailleCle=sqrt(tailleCle/8);
+    unsigned char cle[tailleCle][tailleCle];
+    for (int i = 0; i < tailleCle ; i++ )
+        {
+        for (int j = 0; j < tailleCle ; ++j)
+        {
+            cle[i][j] = rand()%2;
+            cle[i][j] = (char)cle[i][j];
+        }
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
     }
     subBytes(state);
     shiftRows(state);
@@ -122,6 +280,7 @@ void roundAES(unsigned char *state, unsigned char *cle, int Nr)
     addRoundKey(state, cle);
 }
 
+<<<<<<< HEAD
 void chiffrementAES128()
 {
     /*unsigned long mot_passe;
@@ -142,12 +301,35 @@ void chiffrementAES128()
     }
     else
     {
+=======
+void chiffrementAES128(unsigned char *cle)
+{
+     FILE* fichier = NULL;
+     FILE* cipher = NULL;
+     fichier = fopen ("test.txt", "r");
+     cipher = fopen ("cipher.txt", "w");
+     unsigned char temp = '0';
+     unsigned char state[4][4];
+     int Nr = 10;
+     if (fichier == NULL){
+        printf ("Erreur dans l'ouverture du fichier !\n");
+     }
+     else{
+        //On récupère le tableau qu'on va mettre dans la round
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
         while (temp != EOF)
         {
             // On remplit le bloc de 0
             for (int i=0; i<16; i++)
             {
+<<<<<<< HEAD
                 state[i] = 0;
+=======
+                for (int j = 0; j < 4; ++j)
+                {
+                    state[i][j] = 0;
+                }
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
             }
             // Puis on met les valeurs du fichier dans le bloc
             int i = 0;
@@ -156,16 +338,52 @@ void chiffrementAES128()
                 temp = fgetc(clair);
                 if (temp != EOF)
                 {
+<<<<<<< HEAD
                     state[i] = temp;
+=======
+                    temp = fgetc(fichier);
+                    if (temp != EOF)
+                    {
+                        state[k][l] = temp;
+                    }
+                    l++;
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
                 }
                 i++;
             }
+<<<<<<< HEAD
             // On effectue une round AES
             roundAES(state, cle, Nr);
             // On écrit le bloc chiffré dans un fichier de sortie
             for (int i=0; i<16; i++)
             {
                 fputc(state[i], cipher);
+=======
+            addRoundKey(state, cle);
+            for (int i=0; i<Nr; i++ )
+            {
+                subBytes(state);
+                shiftRows(state);
+                mixColumns(state);
+                keyExpansion(cle);
+                addRoundKey(state, cle);
+            }
+            subBytes(state);
+            shiftRows(state);
+            keyExpansion(cle);
+            addRoundKey(state, cle);
+            if (cipher == NULL){
+                 printf ("Erreur dans l'ouverture du fichier cipher !\n");
+            }
+            else{
+                for (int i=0; i<4; i++)
+                {
+                     for (int j=0; j<4; j++)
+                     {
+                         fputc(state[i][j], cipher);
+                     }
+                }
+>>>>>>> 536ba3f9c0fefd296f0e18c01d2263cde4603389
             }
         }
         fclose (cipher);
