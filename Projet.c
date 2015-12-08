@@ -54,7 +54,7 @@ int moduloMixColumns(int temp)
     return temp;
 }
 
-void shiftRows(unsigned char *state)
+void mixColumns(unsigned char *state)
 {
     unsigned char temp='0';
     for (int i = 0; i < 4; ++i) //Pour chaque ligne
@@ -143,7 +143,7 @@ void chiffrementAES128()
     }
     else
     {
-        while (temp != EOF)
+        while (!feof(clair))
         {
             // On remplit le bloc de 0
             for (int i=0; i<16; i++)
@@ -151,23 +151,18 @@ void chiffrementAES128()
                 state[i] = 0;
             }
             // Puis on met les valeurs du fichier dans le bloc
-            int i = 0;
-            while (temp != EOF && i<16)
+            for (int i=0; i<16; i++)
             {
-                temp = fgetc(clair);
-                if (temp != EOF)
+                if (!feof(clair))
                 {
-                    state[i] = temp;
-                    temp = fgetc(fichier);
-                    if (temp != EOF)
-                    {
-                        state[k][l] = temp;
-                    }
-                    l++;
+                    state[i] = fgetc(clair);
                 }
-                i++;
+                else
+                {
+                    break;
+                }
             }
-            // On effectue une round AES
+            // On effectue une round AES avec le bloc en question
             roundAES(state, cle, Nr);
             // On écrit le bloc chiffré dans un fichier de sortie
             for (int i=0; i<16; i++)
