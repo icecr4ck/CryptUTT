@@ -109,7 +109,7 @@ void keyExpansion(unsigned char *cle)
 void roundAES(unsigned char *state, unsigned char *cle, int Nr)
 {
     addRoundKey(state, cle);
-    for (int i=0; i<Nr; i++)
+    for (int i=0; i<Nr-1; i++)
     {
         subBytes(state);
         shiftRows(state);
@@ -125,12 +125,7 @@ void roundAES(unsigned char *state, unsigned char *cle, int Nr)
 
 void chiffrementAES128()
 {
-    /*unsigned long mot_passe;
-    printf(" \n --> Entrez votre clé (numérique) pour chiffrer <-- ");
-    scanf("%lu", &mot_passe);
-    srand(mot_passe);*/
     int Nr = 10;
-    unsigned char temp = '0';
     unsigned char state[16];
     unsigned char cle[16] = {'C', 'e', 'c', 'i', 'e', 's', 't', 'u', 'n', 'e', 'x', 'e', 'm', 'p', 'l', 'e'};
     FILE* clair = NULL;
@@ -173,16 +168,103 @@ void chiffrementAES128()
         fclose (cipher);
         fclose (clair);
     }
+    printf("\nFélicitations, votre fichier a été chiffré en AES 128 bits !\n\n");
 }
 
 void chiffrementAES196()
 {
-
+    int Nr = 12;
+    unsigned char state[16];
+    unsigned char cle[24] = {'C', 'e', 'c', 'i', 'e', 's', 't', 'u', 'n', 'e', 'x', 'e', 'm', 'p', 'l', 'e', '1', '2', '8', 'b', 'i', 't', 's', '.'};
+    FILE* clair = NULL;
+    FILE* cipher = NULL;
+    clair = fopen("test.txt", "r");
+    cipher = fopen("cipher.txt", "w");
+    if (clair == NULL || cipher == NULL)
+    {
+        printf ("Erreur dans l'ouverture du fichier !\n\n");
+    }
+    else
+    {
+        while (!feof(clair))
+        {
+            // On remplit le bloc de 0
+            for (int i=0; i<16; i++)
+            {
+                state[i] = 0;
+            }
+            // Puis on met les valeurs du fichier dans le bloc
+            for (int i=0; i<16; i++)
+            {
+                if (!feof(clair))
+                {
+                    state[i] = fgetc(clair);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // On effectue une round AES avec le bloc en question
+            roundAES(state, cle, Nr);
+            // On écrit le bloc chiffré dans un fichier de sortie
+            for (int i=0; i<16; i++)
+            {
+                fputc(state[i], cipher);
+            }
+        }
+        fclose (cipher);
+        fclose (clair);
+    }
+    printf("\nFélicitations, votre fichier a été chiffré en AES 196 bits !\n\n");
 }
 
 void chiffrementAES256()
 {
-
+    int Nr = 14;
+    unsigned char state[16];
+    unsigned char cle[32] = {'C', 'e', 'c', 'i', 'e', 's', 't', 'u', 'n', 'e', 'x', 'e', 'm', 'p', 'l', 'e', 'e', 'n', '2', '5', '6', 'b', 'i', 't', 's', ',', 't', 'e', 's', 't', '.', '.'};
+    FILE* clair = NULL;
+    FILE* cipher = NULL;
+    clair = fopen("test.txt", "r");
+    cipher = fopen("cipher.txt", "w");
+    if (clair == NULL || cipher == NULL)
+    {
+        printf ("Erreur dans l'ouverture du fichier !\n\n");
+    }
+    else
+    {
+        while (!feof(clair))
+        {
+            // On remplit le bloc de 0
+            for (int i=0; i<16; i++)
+            {
+                state[i] = 0;
+            }
+            // Puis on met les valeurs du fichier dans le bloc
+            for (int i=0; i<16; i++)
+            {
+                if (!feof(clair))
+                {
+                    state[i] = fgetc(clair);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // On effectue une round AES avec le bloc en question
+            roundAES(state, cle, Nr);
+            // On écrit le bloc chiffré dans un fichier de sortie
+            for (int i=0; i<16; i++)
+            {
+                fputc(state[i], cipher);
+            }
+        }
+        fclose (cipher);
+        fclose (clair);
+    }
+    printf("\nFélicitations, votre fichier a été chiffré en AES 256 bits !\n\n");
 }
 
 void chiffrementAES()
