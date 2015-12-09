@@ -149,7 +149,7 @@ void roundAES(unsigned char *state, char *cle, int Nr)
 
 void aes(int tailleCle, int Nr)
 {
-    printf("Vous avez choisi le chiffrement AES en %d bits!\n", tailleCle);
+    printf("Vous avez choisi le chiffrement AES en %d bits !\n", tailleCle);
     int tailleCleByte = tailleCle/8;
     unsigned char state[16];
     char *cle = malloc(tailleCleByte*sizeof(char));
@@ -179,7 +179,6 @@ void aes(int tailleCle, int Nr)
             n--;
         }
     }
-    printf("%s\n", cle);
     if (clair == NULL || cipher == NULL)
     {
         printf ("\nErreur dans l'ouverture du fichier !\n\n");
