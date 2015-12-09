@@ -4,10 +4,9 @@
 #include <time.h>
 
 void addRoundKey(unsigned char *state, char *cle)
-{   
-    char a=0,b=0,c=0;
+{
     for (int i = 0; i < 16; i++){
-        state[i]=cle[i]^state[i];
+        state[i] = cle[i] ^ state[i];
     }
 }
 
@@ -125,10 +124,8 @@ void keyExpansion(char *cle)
         0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
     };
-    unsigned char a=0;
     for (int i = 0;i < 4; i++){
-        a=(unsigned char)cle[i];
-        cle[i] = sbytes[a];
+        cle[i] = sbytes[(unsigned char)cle[i]];
     }
 }
 
@@ -169,7 +166,7 @@ void aes(int tailleCle, int Nr)
         int m = strlen(cle);
         while (strlen(cle) < tailleCleByte)
         {
-            cle[m] = cle[m-1] ^ normCle[m]; 
+            cle[m] = cle[m-1] ^ normCle[m];
             m++;
         }
     }
@@ -182,7 +179,7 @@ void aes(int tailleCle, int Nr)
             n--;
         }
     }
-    printf("%s\n");
+    printf("%s\n", cle);
     if (clair == NULL || cipher == NULL)
     {
         printf ("\nErreur dans l'ouverture du fichier !\n\n");
