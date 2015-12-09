@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 void addRoundKey(unsigned char *state, char *cle)
 {
@@ -147,26 +148,40 @@ void roundAES(unsigned char *state, char *cle, int Nr)
 
 void aes(int tailleCle, int Nr)
 {
+    printf("Vous avez choisi le chiffrement AES en %d bits!\n", tailleCle);
     int tailleCleByte = tailleCle/8;
     unsigned char state[16];
     char *cle = malloc(tailleCleByte*sizeof(char));
+    char normCle[32] = {0xCD, 0x0C, 0x13, 0xEC, 0x5F, 0x97, 0x44, 0x17, 0xC4, 0xA7, 0x7E, 0x3D, 0x64, 0x5D, 0x19, 0x73, 0xE7, 0xC8, 0x37, 0x6D, 0x8D, 0xD5, 0x4E, 0xA9, 0x6C, 0x56, 0xF4, 0xEA, 0x65, 0x7A, 0xAE, 0x08};
     FILE* clair = NULL;
     FILE* cipher = NULL;
-    clair = fopen("test.txt", "r");
+    clair = fopen("clair.txt", "r");
     cipher = fopen("cipher.txt", "w");
-    printf("\nEntrez la clé de chiffrement (%d caractères)\n", tailleCleByte);
+    printf("\n--> Entrez la clé de chiffrement <--\n");
+    printf("Clé: ");
     scanf("%s", cle);
     if (strlen(cle) < tailleCleByte)
     {
-        //Agrandir la clé
+        int m = strlen(cle);
+        while (strlen(cle) < tailleCleByte)
+        {
+            cle[m] = cle[m-1] ^ normCle[m]; 
+            m++;
+        }
     }
     else if (strlen(cle) > tailleCleByte)
     {
-        //Diminuer la clé
+        int n = strlen(cle);
+        while (strlen(cle) > tailleCleByte)
+        {
+            cle[n] = 0;
+            n--;
+        }
     }
+    printf("%s\n", cle);
     if (clair == NULL || cipher == NULL)
     {
-        printf ("Erreur dans l'ouverture du fichier !\n\n");
+        printf ("\nErreur dans l'ouverture du fichier !\n\n");
     }
     else
     {
@@ -199,8 +214,8 @@ void aes(int tailleCle, int Nr)
         }
         fclose (cipher);
         fclose (clair);
+        printf("\nFélicitations, votre fichier a été chiffré en AES %d bits !\n\n", tailleCle);
     }
-    printf("\nFélicitations, votre fichier a été chiffré en AES %d bits !\n\n", tailleCle);
 }
 
 void chiffrementAES()
@@ -211,6 +226,7 @@ void chiffrementAES()
     printf("1.128 bits\n");
     printf("2.192 bits\n");
     printf("3.256 bits\n");
+    printf("Votre choix: ");
     scanf("%d", &choixMenu);
     switch (choixMenu)
     {
@@ -247,7 +263,7 @@ int main(int argc, char *argv[])
     printf("1.Chiffrement AES\n");
     printf("2.Chiffrement El-Gamal\n");
     printf("3.Signature El-Gamal\n");
-    printf("\nVotre choix?\n");
+    printf("Votre choix: ");
     scanf("%d", &choixMenu);
     switch(choixMenu)
     {
