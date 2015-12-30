@@ -1,6 +1,6 @@
 /*************************************************************************
 **       Advanced Encryption Standard - 128 - implementation en C       **
-**       Chiffrement, dechiffrement, création de clef                   **
+**       Chiffrement, dechiffrement, crÃ©ation de clef                   **
 **       Par Lillo Adrien et Comte-Gaz Quentin                          **
 *************************************************************************/
 
@@ -14,15 +14,16 @@
 #define xtime(x)   ((((x)<<1) ^ ((((x)>>7) & 1) * 27)) & 255)
 
 
+
 /*------------------------ Les tables et les constantes -------------------*/
 
 #define Nk 4
-int TAILLEMESSAGE=0; // On initialise la taille du message à 0
+int TAILLEMESSAGE=0; // On initialise la taille du message Ã  0
 int TEST=0; // Cette variable permet de passer en phase de test de norme
 
 typedef unsigned int UINT;
 
-// Les blocks de  messages sont stockés sur un tableau de 16 uchar
+// Les blocks de  messages sont stockÃ©s sur un tableau de 16 uchar
 // M=[ M_0 .. M_3 | M_4 .. M_7 | M_8 .. M_11 | M_12 .. M_15 ] 
 // M=[ colonne 0  | colonne 1  | colonne 2   | colonne 3    ]
 
@@ -90,7 +91,7 @@ int Rcon[255] = {
 	0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 0x72, 0xe4, 0xd3, 0xbd, 
 	0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb  };
 
-// Table de multiplication à utiliser dans InvMixColumns (tables de Galois(2^8)
+// Table de multiplication Ã  utiliser dans InvMixColumns (tables de Galois(2^8)
 //http://en.wikipedia.org/wiki/Rijndael_mix_columns 
 
 int Mul2[256] = {
@@ -220,7 +221,7 @@ int fsize(const char * fname)
         return ptr;
     }
     
-    return 0; //En cas d'impossibilité de lecture du fichier, on retourne 0.
+    return 0; //En cas d'impossibilitÃ© de lecture du fichier, on retourne 0.
 }
 
 // Ouverture d'un fichier contenue texte (*.txt)
@@ -249,7 +250,7 @@ if (nomfichier != NULL)
     } 
     fclose(fichier1);
     
-    //Affichage du fichier ouvert et du nombre de caractères :
+    //Affichage du fichier ouvert et du nombre de caractÃ¨res :
    /* printf("Message/clef :\n");            
     for(i=0;i<taille;i++){
        printf("%c",chaine[i]);                    
@@ -301,7 +302,7 @@ if (nomfichier != NULL && taille==16){
           }
     fclose(fichier1);
     
-    //Affichage du fichier ouvert et du nombre de caractères :
+    //Affichage du fichier ouvert et du nombre de caractÃ¨res :
    /* printf("Message/clef :\n");            
     for(i=0;i<taille;i++){
        printf("%c",chaine[i]);                    
@@ -342,7 +343,7 @@ if (nomfichier != NULL)
           }
     fclose(fichier1);
     
-    //Affichage du fichier ouvert et du nombre de caractères :
+    //Affichage du fichier ouvert et du nombre de caractÃ¨res :
    /* printf("Message/clef :\n");            
     for(i=0;i<taille;i++){
        printf("%c",chaine[i]);                    
@@ -352,7 +353,7 @@ if (nomfichier != NULL)
 }
 
 
-// Ecrire des données dans un fichier texte en ASCII
+// Ecrire des donnÃ©es dans un fichier texte en ASCII
 void editerfichier(const char * nomfichier,unsigned char *chaine,int taillechaine){ //On ecrit ce qu'il y a dans fichier dans chaine.
     int i;
     //printf("%d",taille);
@@ -365,7 +366,7 @@ void editerfichier(const char * nomfichier,unsigned char *chaine,int taillechain
     else printf("\nLe fichier n'existe pas ...\n");
     fclose(fichier1);
     
-    //Affichage du fichier ouvert et du nombre de caractères :
+    //Affichage du fichier ouvert et du nombre de caractÃ¨res :
     /*printf("Message :\n");            
     for(i=0;i<taillechaine;i++){
        printf("%c",chaine[i]);                    
@@ -374,7 +375,7 @@ void editerfichier(const char * nomfichier,unsigned char *chaine,int taillechain
    */ 
 }
 
-// Ecrire des données dans un fichier texte en HEXA
+// Ecrire des donnÃ©es dans un fichier texte en HEXA
 void editerfichierHEXA(const char * nomfichier,unsigned char *chaine,int taillechaine){ //On ecrit ce qu'il y a dans fichier dans chaine.
     int i;
     //printf("%d",taille);
@@ -387,7 +388,7 @@ void editerfichierHEXA(const char * nomfichier,unsigned char *chaine,int taillec
     else printf("\nLe fichier n'existe pas ...\n");
     fclose(fichier1);
     
-    //Affichage du fichier ouvert et du nombre de caractères :
+    //Affichage du fichier ouvert et du nombre de caractÃ¨res :
     /*printf("Message :\n");            
     for(i=0;i<taillechaine;i++){
        printf("%c",chaine[i]);                    
@@ -398,18 +399,18 @@ void editerfichierHEXA(const char * nomfichier,unsigned char *chaine,int taillec
 
 
 // La fonction affichage en HEXA d'un message 
-void affichagehexa(unsigned char *in) //en héxa
+void affichagehexa(unsigned char *in) //en hÃ©xa
 {
   int j;
   for(j=0;j<TAILLEMESSAGE;j++){
-     printf("%02.2x ",in[j]);// Affichage en héxa (pour verifier avec la norme) 
+     printf("%02.2x ",in[j]);// Affichage en hÃ©xa (pour verifier avec la norme) 
   }
   printf("\n");
 }
 
 // Affichage en ASCII d'un message
 void affichage(unsigned char *in){
-  int j; // N'afficher que les 32 premiers caractères au maximum
+  int j; // N'afficher que les 32 premiers caractÃ¨res au maximum
   if(TAILLEMESSAGE>32){
      for(j=0;j<32;j++){
        printf("%c",in[j]);
@@ -446,7 +447,7 @@ void affichage_binaire(unsigned char *in)
   printf("\n");
 }
 
-//Creer un nombe aléatoire entre iMin et iMax
+//Creer un nombe alÃ©atoire entre iMin et iMax
 int Random (int iMin, int iMax){
     return (iMin + (rand () % (iMax-iMin+1)));
 } 
@@ -467,7 +468,7 @@ int affichageMenu(){
      return choixMenu;
 }
 
-/*----------------------Fonctions propres à l'AES--------------------------*/
+/*----------------------Fonctions propres Ã  l'AES--------------------------*/
 
 
 
@@ -490,14 +491,14 @@ void Affecte(unsigned char out[], unsigned char in[])
 }
 
 /* La fonction KeyExpansion produit les 4(Nr+1) clef de rondes, 
-où Nr est le nombre de clef de rondes*/
+oÃ¹ Nr est le nombre de clef de rondes*/
 //Cf p20 du fichier de norme pour le pseudo code
 void KeyExpansion( unsigned char *RoundKey, unsigned char Key[], int Nr)
 {
   int i,j;
   unsigned char temp[4],k;
 	
-  // La première clef de ronde est la clef elle même.
+  // La premiÃ¨re clef de ronde est la clef elle mÃªme.
   for(j=0;j<Nk;j++){
       RoundKey[j*4]=Key[j*4];
       RoundKey[j*4+1]=Key[j*4+1];
@@ -505,7 +506,7 @@ void KeyExpansion( unsigned char *RoundKey, unsigned char Key[], int Nr)
       RoundKey[j*4+3]=Key[j*4+3];
   }
 
-  /* On créé maintenant les autres clefs de rondes à l'aide 
+  /* On crÃ©Ã© maintenant les autres clefs de rondes Ã  l'aide 
   des clefs de ronde precedentes).*/
   while (j < (4 * (Nr+1))){
       for(i=0;i<4;i++){
@@ -543,7 +544,7 @@ void KeyExpansion( unsigned char *RoundKey, unsigned char Key[], int Nr)
 	    temp[3]=sbox[temp[3]];
 	  }
 	}
-      // Il ne reste plus qu'à creer les clefs de rondes : 
+      // Il ne reste plus qu'Ã  creer les clefs de rondes : 
       RoundKey[j*4+0] = RoundKey[(j-Nk)*4+0] ^ temp[0];
       RoundKey[j*4+1] = RoundKey[(j-Nk)*4+1] ^ temp[1];
       RoundKey[j*4+2] = RoundKey[(j-Nk)*4+2] ^ temp[2];
@@ -552,7 +553,7 @@ void KeyExpansion( unsigned char *RoundKey, unsigned char Key[], int Nr)
     }
 }
 
-// La fonction AddRoundKey ajoute la clef de ronde à *in
+// La fonction AddRoundKey ajoute la clef de ronde Ã  *in
 void AddRoundKey(unsigned char *out, unsigned char *in,unsigned char RoundKey[], int round) 
 {        
 	int i,j;
@@ -611,7 +612,7 @@ void ShiftRows(unsigned char *out, unsigned char *in)
 	    out[4*j+1]=in[4*(j+1)+1];
 	  }
 	out[4*3+1]=in[1];
-	// troisième ligne on decalage de 2 sur la gauche 
+	// troisiÃ¨me ligne on decalage de 2 sur la gauche 
 	for(j=0;j<2;j++)
 	  {
 	    out[4*j+2]=in[4*(j+2)+2];
@@ -749,7 +750,7 @@ void Cipher(unsigned char *C, unsigned char M[], unsigned char Key[], int Nr)
 	AddRoundKey(T,W,RoundKey,0); 
 	// Il y a Nr rondes.
 	// Les Nr-1 premieres rondes sont identiques
-	// Ces Nr-1 rondes sont effectuÃ©es dans la boucle for ci-dessous
+	// Ces Nr-1 rondes sont effectuÃƒÂ©es dans la boucle for ci-dessous
 	for(round=1;round<Nr;round++)
 	{
      if(TEST==1){	
@@ -816,7 +817,7 @@ void Cipher(unsigned char *C, unsigned char M[], unsigned char Key[], int Nr)
   
 }
 
- /* Ne marche pas très bien*//*    
+ /* Ne marche pas trÃ¨s bien*//*    
 int count(unsigned char *tab){
      int i;
      for (i=0;tab[i];i++);
@@ -824,8 +825,8 @@ int count(unsigned char *tab){
 
 }*/
 
-// Problème avec les sauts de lignes
-// CipherComplet permet de chiffrer un message de taille quelconque grace à Cipher
+// ProblÃ¨me avec les sauts de lignes
+// CipherComplet permet de chiffrer un message de taille quelconque grace Ã  Cipher
 void CipherC(unsigned char *C1, unsigned char M[], unsigned char Key[], int Nr){
      int i,j,iteration=0,nBloc=0;
      unsigned char C[16];
@@ -915,7 +916,7 @@ void Decipher(unsigned char *out, unsigned char in[], unsigned char Key[], int N
 	}
 }
 
-// DeCipherComplet permet de déchiffrer un message de taille quelconque grace à DeCipher
+// DeCipherComplet permet de dÃ©chiffrer un message de taille quelconque grace Ã  DeCipher
 void DecipherC(unsigned char *out, unsigned char in[], unsigned char Key[], int Nr){
      int i,j,iteration=0,nBloc=0;
     unsigned char out1[16];
@@ -946,7 +947,7 @@ int main (){
     for(j=0;j<16;j++) {if(fsize("texteclair.txt")%16!=0);
                       else TAILLEMESSAGE++;}
     
-    unsigned char M[fsize("texteclair.txt")]; // La taille du message crypté et du message décrypté est la meme (... elle doit etre modulo 16=0... à faire)
+    unsigned char M[fsize("texteclair.txt")]; // La taille du message cryptÃ© et du message dÃ©cryptÃ© est la meme (... elle doit etre modulo 16=0... Ã  faire)
     unsigned char C[fsize("textecrypte.txt")];
     unsigned char CHEXA[fsize("textecrypte.txt")/2];   
     unsigned char Key[16]={0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f}; //Clef par defaut  
@@ -960,7 +961,7 @@ int main (){
     choixMenu = affichageMenu();   
    
      
-    //Les differentes fonctions à effectuer
+    //Les differentes fonctions Ã  effectuer
         switch(choixMenu){   
                      case 1:{
                           printf("\nNouvelle clef aleatoire (clef.txt) :\n");
@@ -994,7 +995,7 @@ int main (){
                           printf("Les 32 premiers caracteres du message crypte :\n");
                           affichage(C);
                           /*EDITER LE FICHIER SOUS FORME HEXA*/
-                          editerfichierHEXA("textecrypte.txt",C,TAILLEMESSAGE); // enregistrer le texte crypté dans le fichier textecrypte.txt
+                          editerfichierHEXA("textecrypte.txt",C,TAILLEMESSAGE); // enregistrer le texte cryptÃ© dans le fichier textecrypte.txt
                           printf("\n");
                           break;}
                      case 3:{
@@ -1012,7 +1013,7 @@ int main (){
                           DecipherC(M,CHEXA,Key,10);
                           printf("Les 32 premiers caracteres du message decrypte :\n");
                           affichage(M);
-                          editerfichier("texteclair.txt",M,TAILLEMESSAGE); // enregistrer le texte crypté dans le fichier texteclair.txt   
+                          editerfichier("texteclair.txt",M,TAILLEMESSAGE); // enregistrer le texte cryptÃ© dans le fichier texteclair.txt   
                           printf("\n");                                                                     
                           break;}
                      case 4:{
@@ -1036,7 +1037,7 @@ int main (){
         }
    /* 
     FILE* fichier=fopen("texteclair.txt","r");
-    unsigned char M[fsize("texteclair.txt")]; // La taille du message crypté et du message décrypté est la meme.
+    unsigned char M[fsize("texteclair.txt")]; // La taille du message cryptÃ© et du message dÃ©cryptÃ© est la meme.
     unsigned char C[fsize("texteclair.txt")];  
     TAILLEMESSAGE=fsize("texteclair.txt"); 
     fclose(fichier);
