@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
+// Permet de gérer le modulo avec mixColumns
 #define xtime(x)   ((((x)<<1) ^ ((((x)>>7) & 1) * 27)) & 255)
 
 const char sbytes[256] =
@@ -125,6 +124,7 @@ const char MulE[256] =
     0xd7,0xd9,0xcb,0xc5,0xef,0xe1,0xf3,0xfd,0xa7,0xa9,0xbb,0xb5,0x9f,0x91,0x83,0x8d
 };
 
+// Fonction addRoundKey qui fait un xor entre la clé et le bloc d'entrée
 void addRoundKey(char *stateIn, char *stateOut, char cle[])
 {
     for (int i = 0; i < 16; i++){
@@ -132,6 +132,7 @@ void addRoundKey(char *stateIn, char *stateOut, char cle[])
     }
 }
 
+// Fonction subBytes qui applique une transformation non linéaire sur le bloc d'entrée
 void subBytes(char *stateIn, char *stateOut)
 {
     for (int i = 0; i < 16; i++){
@@ -139,6 +140,7 @@ void subBytes(char *stateIn, char *stateOut)
     }
 }
 
+// Fonction subBytes inverse qui permet d'inverser l'application non linéaire des sbox
 void invSubBytes(char *stateIn, char *stateOut)
 {
     for (int i = 0;i < 16; i++){
@@ -146,27 +148,35 @@ void invSubBytes(char *stateIn, char *stateOut)
     }
 }
 
+// Fonction mixColumns qui modifie les colonnes du bloc d'entrée
 void mixColumns(char *stateIn, char *stateOut)
 {
     char base, temp;
+    // 
     for(int j=0; j<4; j++)
     {   
+        // On xor chaque élément d'une colonne dans base
         base = stateIn[0+j*4] ^ stateIn[1+j*4] ^ stateIn[2+j*4] ^ stateIn[3+j*4] ;
+        // 1er élément d'une colonne de sortie
         temp = stateIn[0+j*4] ^ stateIn[1+j*4] ; 
         temp = xtime(temp); 
         stateOut[0+j*4] = temp ^ base ^  stateIn[0+j*4];
+        // 2ème élément d'une colonne de sortie
         temp = stateIn[1+j*4] ^ stateIn[2+j*4] ; 
         temp = xtime(temp); 
         stateOut[1+j*4] = temp ^ base ^ stateIn[1+j*4];
+        // 3ème élément d'une colonne de sortie
         temp = stateIn[2+j*4] ^ stateIn[3+j*4] ; 
         temp = xtime(temp); 
         stateOut[2+j*4] = temp ^ base ^ stateIn[2+j*4];
+        // 4ème élément d'une colonne de sortie
         temp = stateIn[3+j*4] ^ stateIn[0+j*4]; 
         temp = xtime(temp);
         stateOut[3+j*4] = temp ^ base ^ stateIn[3+j*4];
     }
 }
 
+// Fonction mixColumns inverse qui permet de récupérer l'ordre des colonnes originel
 void invMixColumns(char *stateIn, char *stateOut)
 {
     for(int j=0; j<4; j++)
@@ -178,6 +188,7 @@ void invMixColumns(char *stateIn, char *stateOut)
     }
 }
 
+// Fonction shiftRows qui modifie cycliquement les lignes du bloc d'entrée
 void shiftRows(char *stateIn, char *stateOut)
 {
     // Première ligne on ne change rien
@@ -205,6 +216,7 @@ void shiftRows(char *stateIn, char *stateOut)
     stateOut[3] = stateIn[15];
 }
 
+// Fonction shiftRows inverse qui récupère l'ordre originel des lignes
 void invShiftRows(char *stateIn, char *stateOut)
 {
     // Première ligne on ne change rien
@@ -232,6 +244,7 @@ void invShiftRows(char *stateIn, char *stateOut)
     stateOut[15] = stateIn[3];
 }
 
+// Fonction keyExpansion qui permet de modifier la clé afin d'avoir les différentes clés de round
 void keyExpansion(char *cle)
 {
     for (int i = 0; i < 16; i++){
@@ -239,6 +252,7 @@ void keyExpansion(char *cle)
     }
 }
 
+// Fonction permettant de faire une round de chiffrement AES avec un bloc de 16 octets en entrée
 void roundChiffrementAES(char stateIn[], char *stateOut, char cle[], int Nr)
 {
     addRoundKey(stateIn, stateOut, cle);
@@ -256,6 +270,7 @@ void roundChiffrementAES(char stateIn[], char *stateOut, char cle[], int Nr)
     addRoundKey(stateIn, stateOut, cle);
 }
 
+// Fonction permettant de faire une round de déchiffrement AES avec un bloc de 16 octets en entrée
 void roundDechiffrementAES(char stateIn[], char *stateOut, char cle[], int Nr)
 {
     addRoundKey(stateIn, stateOut, cle);
@@ -273,109 +288,86 @@ void roundDechiffrementAES(char stateIn[], char *stateOut, char cle[], int Nr)
     addRoundKey(stateIn, stateOut, cle);
 }
 
-/* Ne fonctionne pas...
-void chiffrerChaineAES(char cle[], int Nr)
-{
-    int n=0;
-    char chaineIn[100];
-    char stateIn[16];
-    char *stateOut = malloc(16*sizeof(char));
-    printf("\n--> Entrez la chaîne de caractères à chiffrer (100 caractères max) <--\n");
-    printf("Chaîne à chiffrer: ");
-    scanf("%s", chaineIn);
-    printf("\nChaîne chiffrée: ");
-    if (strlen(chaineIn) > 16)
-    {
-        printf("%lu\n", strlen(chaineIn));
-        if (strlen(chaineIn)%16 == 0)
-        {
-            n = strlen(chaineIn)/16 - 1;
-        }
-        else
-        {
-            n = strlen(chaineIn)/16;
-        }
-    }
-    for (int i=0; i<n+1; i++)
-    {
-        for (int j=0; j<16; j++)
-        {
-            stateIn[j] = chaineIn[16*i+j];
-        }
-        roundChiffrementAES(stateIn, stateOut, cle, Nr);
-        printf("%s", stateOut);
-    }
-    printf("\n\n");
-    free(stateOut);
-}*/
-
 // Connaitre la taille d'un fichier de texte
 int fsize(const char * nomFichier)
 {
-    // La taille du fichier, si elle a pu etre calculee, est retournee dans *ptr
+    // On retourne la taille du fichier dans la variable taille
     int taille;
     FILE * f;
     f = fopen(nomFichier, "r");   
     if (f != NULL)
     {
-        fseek(f, 0, SEEK_END); // aller a la fin du fichier
-        taille = ftell(f); // lire l'offset de la position courante par rapport au debut du fichier
+        fseek(f, 0, SEEK_END); // Permet d'aller à la fin du fichier
+        taille = ftell(f); // Lit l'offset de la position courante par rapport au début du fichier
         fclose(f);
         return taille;
     }
-    
-    return 0; //En cas d'impossibilité de lecture du fichier, on retourne 0.
+    return 0;
 }
 
+// Fonction qui permet de chiffrer un fichier complet avec AES
 void chiffrerFichierAES(char cle[], int Nr)
 {
     char nomFichierIn[30] = "";
     char stateIn[16] = "";
     char *stateOut = malloc(16*sizeof(char));
+    // Récupération du fichier à chiffrer
     printf("\n--> Entrez le nom du fichier à chiffrer (30 caractères max) <--\n");
     printf("Nom du fichier à chiffrer: ");
     scanf("%s", nomFichierIn);
     FILE* fichierin = NULL;
     FILE* fichierout = NULL;
+    // Ouverture des fichiers
     fichierin = fopen(nomFichierIn, "r");
     fichierout = fopen("cipher.txt", "w"); 
     int n=0, m=0;
+    // Récupération de la taille du fichier à chiffrer
     int tailleFichierIn = fsize(nomFichierIn);
     if (fichierin == NULL || fichierout == NULL)
     {
         printf ("\nErreur dans l'ouverture du fichier !\n\n");
     }
+    // Si les fichiers ont pu être ouverts
     else
     {
+        // On différencie selon la taille du fichier à chiffrer
+        // Si le fichier a plus de 16 caractères, on fait plusieurs rounds de chiffrement car il y a plusieurs blocs
         if (tailleFichierIn > 16)
         {
+            // On commence par faire tous les blocs qui contiennent 16 caractères exactement
             n = tailleFichierIn/16;
             for (int i=0; i<n; i++)
             {
+                // Récupération des caractères avec la fonction fgetc qu'on met dans stateIn
                 for (int j=0; j<16; j++)
                 {
                     stateIn[j] = fgetc(fichierin);
                 }
+                // Exécution de la round de chiffrement sur stateIn
                 roundChiffrementAES(stateIn, stateOut, cle, Nr);
+                // On récupère stateOut qu'on écrit dans le fichier de sortie
                 for (int k=0; k<16; k++)
                 {
                     fputc(stateOut[k], fichierout);
                 }
             }
+            // Puis on regarde si la taille du fichier est modulo16
+            // Si ce n'est pas le cas, on chiffre un dernier bloc avec les derniers caractères restants
             if (tailleFichierIn%16 != 0)
             {
-                m = tailleFichierIn%16;
+                m = tailleFichierIn%16; // Contient le nombre de caractères restants
                 for (int j=0; j<m; j++)
                 {
                     stateIn[j] = fgetc(fichierin);
                 }
                 roundChiffrementAES(stateIn, stateOut, cle, Nr);
-                for (int k=0; k<strlen(stateOut); k++)
+                for (int k=0; k<m; k++)
                 {
                     fputc(stateOut[k], fichierout);
                 }
             }
         }
+        // Si la taille du fichier est égale ou inférieure à 16, on ne fait qu'une seule round de chiffrement sur le fichier 
         else
         {
             n = tailleFichierIn;
@@ -384,104 +376,83 @@ void chiffrerFichierAES(char cle[], int Nr)
                 stateIn[i] = fgetc(fichierin);
             }
             roundChiffrementAES(stateIn, stateOut, cle, Nr);
-            for (int k=0; k<strlen(stateOut); k++)
+            for (int k=0; k<n; k++)
             {
                 fputc(stateOut[k], fichierout);
             }
         }
+        // On libère la mémoire allouée à stateOut
         free(stateOut);
+        // On ferme les deux fichiers
         fclose(fichierin);
         fclose(fichierout);
         printf("\nFélicitations, votre fichier a bien été chiffré dans cipher.txt !\n\n");
     }
 }
 
-
-/* Ne fonctionne pas...
-void dechiffrerChaineAES(char cle[], int Nr)
-{
-    int n=0;
-    char chaineIn[100];
-    char stateIn[16];
-    char *stateOut = malloc(16*sizeof(char));
-    printf("\n--> Entrez la chaîne de caractères à déchiffrer (100 caractères max) <--\n");
-    printf("Chaîne à déchiffrer: ");
-    scanf("%s", chaineIn);
-    printf("\nChaîne déchiffrée: ");
-    if (strlen(chaineIn) > 16)
-    {
-        printf("%lu\n", strlen(chaineIn));
-        if (strlen(chaineIn)%16 == 0)
-        {
-            n = strlen(chaineIn)/16 - 1;
-        }
-        else
-        {
-            n = strlen(chaineIn)/16;
-        }
-    }
-    for (int i=0; i<n+1; i++)
-    {
-        for (int j=0; j<16; j++)
-        {
-            stateIn[j] = chaineIn[16*i+j];
-        }
-        roundDechiffrementAES(stateIn, stateOut, cle, Nr);
-        printf("%s", stateOut);
-    }
-    printf("\n\n");
-    free(stateOut);
-}*/
-
+// Fonction qui permet de déchiffrer un fichier complet avec AES
 void dechiffrerFichierAES(char cle[], int Nr)
 {
     char nomFichierIn[30] = "";
     char stateIn[16] = "";
     char *stateOut = malloc(16*sizeof(char));
+    // Récupération du fichier à déchiffrer
     printf("\n--> Entrez le nom du fichier à déchiffrer (30 caractères max) <--\n");
     printf("Nom du fichier à déchiffrer: ");
     scanf("%s", nomFichierIn);
     FILE* fichierin = NULL;
     FILE* fichierout = NULL;
+    // Ouverture des fichiers
     fichierin = fopen(nomFichierIn, "r");
     fichierout = fopen("decipher.txt", "w"); 
     int n=0, m=0;
+    // Récupération de la taille du fichier à déchiffrer
     int tailleFichierIn = fsize(nomFichierIn);
     if (fichierin == NULL || fichierout == NULL)
     {
         printf ("\nErreur dans l'ouverture du fichier !\n\n");
     }
+    // Si les fichiers ont pu être ouverts
     else
     {
+        // On différencie selon la taille du fichier à déchiffrer
+        // Si le fichier a plus de 16 caractères, on fait plusieurs rounds de déchiffrement car il y a plusieurs blocs
         if (tailleFichierIn > 16)
         {
+            // On commence par faire tous les blocs qui contiennent 16 caractères exactement
             n = tailleFichierIn/16;
             for (int i=0; i<n; i++)
             {
+                // Récupération des caractères avec la fonction fgetc qu'on met dans stateIn
                 for (int j=0; j<16; j++)
                 {
                     stateIn[j] = fgetc(fichierin);
                 }
+                // Exécution de la round de déchiffrement sur stateIn
                 roundDechiffrementAES(stateIn, stateOut, cle, Nr);
+                // On récupère stateOut qu'on écrit dans le fichier de sortie
                 for (int k=0; k<16; k++)
                 {
                     fputc(stateOut[k], fichierout);
                 }
             }
+            // Puis on regarde si la taille du fichier est modulo16
+            // Si ce n'est pas le cas, on déchiffre un dernier bloc avec les derniers caractères restants
             if (tailleFichierIn%16 != 0)
             {
-                m = tailleFichierIn%16;
+                m = tailleFichierIn%16; // Contient le nombre de caractères restants
                 for (int j=0; j<m; j++)
                 {
                     stateIn[j] = fgetc(fichierin);
                 }
                 roundDechiffrementAES(stateIn, stateOut, cle, Nr);
-                for (int k=0; k<strlen(stateOut); k++)
+                for (int k=0; k<m; k++)
                 {
                     fputc(stateOut[k], fichierout);
                 }
             }
         }
+        // Si la taille du fichier est égale ou inférieure à 16, on ne fait qu'une seule round de déchiffrement sur le fichier 
         else
         {
             n = tailleFichierIn;
@@ -490,64 +461,21 @@ void dechiffrerFichierAES(char cle[], int Nr)
                 stateIn[i] = fgetc(fichierin);
             }
             roundDechiffrementAES(stateIn, stateOut, cle, Nr);
-            for (int k=0; k<strlen(stateOut); k++)
+            for (int k=0; k<n; k++)
             {
                 fputc(stateOut[k], fichierout);
             }
         }
+        // On libère la mémoire allouée à stateOut
         free(stateOut);
+        // On ferme les deux fichiers
         fclose(fichierin);
         fclose(fichierout);
         printf("\nFélicitations, votre fichier a bien été déchiffré dans decipher.txt !\n\n");
     }
 }
 
-/* Ne fonctionne pas...
-void choisirTypeClairAES(char cle[], int Nr)
-{
-    int choixMenu;
-    printf("\n--> Voulez vous chiffrer une chaîne de caractère ou un fichier ? <--\n");
-    printf("1.Une chaîne de caractères\n");
-    printf("2.Un fichier\n");
-    printf("Votre choix: ");
-    scanf("%d", &choixMenu);
-    switch (choixMenu)
-    {
-    case 1:
-        chiffrerChaineAES(cle, Nr);
-        break;
-    case 2:
-        chiffrerFichierAES(cle, Nr);
-        break;
-    default:
-        printf("Erreur, choix incorrect !\n\n");
-        break;
-     }   
-}*/
-
-/* Ne fonctionne pas...
-void choisirTypeCipherAES(char cle[], int Nr)
-{
-    int choixMenu;
-    printf("\n--> Voulez vous déchiffrer une chaîne de caractère ou un fichier ? <--\n");
-    printf("1.Une chaîne de caractères\n");
-    printf("2.Un fichier\n");
-    printf("Votre choix: ");
-    scanf("%d", &choixMenu);
-    switch (choixMenu)
-    {
-    case 1:
-        dechiffrerChaineAES(cle, Nr);
-        break;
-    case 2:
-        dechiffrerFichierAES(cle, Nr);
-        break;
-    default:
-        printf("Erreur, choix incorrect !\n\n");
-        break;
-     }   
-}*/
-
+// Fonction permettant de régler les prérequis au chiffrement AES (taille de clé, Nr)
 void chiffrementAES()
 {
     int choixMenu;
@@ -577,6 +505,7 @@ void chiffrementAES()
     }
 }
 
+// Fonction permettant de régler les prérequis au déchiffrement AES (taille de clé, Nr)
 void dechiffrementAES()
 {
     int choixMenu;
