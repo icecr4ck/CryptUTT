@@ -1,1 +1,0 @@
-Ceci est un texte clair d'une taille de 64 caractères (en ASCII)
