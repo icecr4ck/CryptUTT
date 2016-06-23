@@ -1,4 +1,4 @@
-# Projet_GS15
+# Outil de chiffrement AES/El-Gamal
 
 Projet de développement en C d'un outil de chiffrement remplissant les fonctions suivantes:
 - chiffrement et déchiffrement en AES 128/192/256 bits
